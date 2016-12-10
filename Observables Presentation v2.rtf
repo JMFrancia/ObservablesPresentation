@@ -1,0 +1,255 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red179\green179\blue179;\red205\green205\blue205;\red154\green154\blue154;
+\red128\green128\blue128;}
+\margl1440\margr1440\vieww22040\viewh18520\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 \ul \ulc0 Reactive Programming with Observables\
+\
+
+\b0 \ulnone So today I\'92m going to be talking about reactive programming with observables. This is a very powerful and relatively new paradigm that is being used more and more with both large-scale and small-scale web applications, and is a core principle behind several frameworks such as Angular2. I\'92m going to try and focus the first half of the presentation on the underlying concepts of observables and what makes them such a powerful tool, and then toward the end I will show you an example app and we will go over how that app was designed and written.\
+\
+Just as a heads up, I\'92m not going to pull up any actual Angular2 code for this presentation as I initially planned, because I want to focus on the core concepts behind observables, and I think it is much easier to demonstrate those concepts using vanilla javascript and HTML. I will, however, be using RxJS, which is the library Angular2 uses for it\'92s observables. So if you are interested in Angular2, everything in this presentation will be completely relevant to you.\
+
+\b \ul \
+\cb2 What is Reactive programming? \
+
+\b0 \ulnone \
+
+\b Programming with asynchronous data streams\
+\
+
+\b0 Reactive programming is programming with asynchronous data streams. This should be a new idea to any of you, since front-end developers regularly deal with asynchronous http requests and event busses. \
+\
+
+\b Everything is a stream
+\b0 \
+\
+However reactive programming, in the context I\'92m describing, is that idea on steroids. You are able to create data streams out of everything - variables, user inputs, properties, caches - with reactive programming, everything is a data stream waiting to be tapped into. Those streams are all observable, and so we create specialized objects called observers to monitor them for output. Those observers in turn, are also observable.\
+\
+
+\b Streams can manipulate data\
+\
+
+\b0 The output from those streams can be manipulated in any way before reaching its observers. In particular, functional programming methods such as map, reduce, and filter are useful, as I\'92ll demonstrate later.\
+\
+
+\b Streams can be combined\
+\
+
+\b0 Data streams can be fed into one another to chain together one or more streams for specialized purposes.\
+\
+
+\b Multiple Observers Per Stream\
+\
+
+\b0 We can attach as many observers as we want to any given stream of data, each of which can use the data as they will.\
+\
+So when you combine the reactive programming philosophy with a toolbox that allows you to manipulate those streams, merge them together, filter them, map them, etc. You get a really powerful system for creating dynamic and interesting UI.\cb1 \
+\
+
+\b \ul Why Use Reactive Programming?\ulnone  \
+\
+Higher Level of Abstraction\
+\
+
+\b0 Programing reactively raises the level of abstraction in our code so that we can focus on the interdependence of events that define business logic, rather than having to fiddle with implementation details. \
+\
+
+\b Powerful front-end development technique
+\b0 \
+\
+This is especially powerful for front-end development, in terms of creating highly interactive apps with a large number of complex UI events that are related to data events. \
+\
+
+\b More complex and efficient UI
+\b0 \
+\
+This is generally the direction that front-end development has been headed in for some time, and programming reactively using observables is a powerful tool that makes it easier for us to make more complex UI interactions.\
+\
+
+\b Helps increase asynchronousity
+\b0 \
+\
+Since all of our data streams behave asynchronously, modeling our front-end behavior out of observable data streams and their observers puts a much greater emphasis on asynchronousity, which means a faster and more powerful user experience
+\b \
+\
+\cb3 \ul Promises (A refresher)\
+\
+
+\b0 \ulnone So real quick, I think you are all familiar with promises, but just in case any of you don\'92t use them on a day-to-day basis, I wanted to provide a quick refresher for what they are and how they work, because this will help provide context for the value of observables.\
+\
+In some ways, a promise is sort of like an event listener. Which is to say that is asynchronously listens for a specific event, such as a click or an http call, and then triggers a callback function based on the outcome of that event. \
+
+\b \
+Can only succeed for fail once\
+\
+
+\b0 However, unlike an event listener, a promise can only succeed or fail once. \
+\
+
+\b Callback function will trigger even if attached to promise after it\'92s been settled\
+\
+
+\b0 Also, a callback function that is attached to the promise will trigger even if it\'92s attached after the promise has already been resolved or rejected. \
+\
+
+\b Places greater emphasis on the result
+\b0 \
+\
+Since the promise can only trigger once, and the callback function will always be called even after the fact, promises place a much greater emphasis on the final result than event listeners do.
+\b \
+\
+Can act as a proxy for a \'91future\'92 value that has not yet been evaluated\
+\
+
+\b0 Also unlike events, promises can act as proxies for future values that have not been evaluated yet. In this way, promises can act as first-class objects in a way that event listeners cannot.
+\b \
+\cb1 \
+\ul Observables: More Powerful Promises\
+\
+
+\b0 \ulnone So now that we\'92ve reviewed promises, let\'92s talk about observables.
+\b  
+\b0 Informally speaking, observables are a lot like promises. Like the promise object, the observable is used for asynchronous computations, representing a value which may be available now, in the future, or never. However observables are more powerful and flexible than promises. \
+\
+
+\b Can be triggered multiple times
+\b0 \
+\
+For instance, unlike promises, which must resolve and can only trigger once, observables may be cancelled and can be triggered or re-tried multiple times. \
+\
+
+\b Can define setup and teardown routines
+\b0 \
+\
+Also unlike promises, observables offer the flexibility to define custom behavior for setup and teardown.
+\b \
+\
+Are Cancellable\
+\
+
+\b0 Unlike promises which need to resolve one way or another, observables may be cancelled.\
+ \
+
+\b Can be \'93Lazy\'94, not necessarily generating data unless subscribed to\
+\
+
+\b0 In fact, observables, unlike promises, may even act as data streams which do not generate data unless they are being subscribed to! This gives them the ability to be lazy.\
+\
+
+\b (Comparison Image)\
+\
+\cb4 \ul The Observable Contract\ulnone \
+\
+
+\b0 So as you may have noticed, I haven\'92t shown any specific code yet, and that\'92s because reactive programming with observables is a paradigm that is not specifically tied to any one language. I will show you some code examples, but I want to emphasize first that this kind of programming can be reproduced in multiple contexts. So that being the case, what exactly makes an object an observable? Well, according to the observable contract, which was created by Microsoft in 2010, the following features are necessary.\
+\
+
+\b Must send out notifications for OnNext, OnCompleted, and OnError
+\b0 \
+
+\b \
+
+\b0 An observable object must send notifications to all of it\'92s observers with the methods OnNext, OnCompleted, and OnError, which are the three categories of feedback when attempting to access a data stream.\
+\
+
+\b Must connect with observers via Subscribe and Unsubscribe\
+\
+
+\b0 All observer objects must connect with observables via a Subscribe() function, and disconnect via an Unsubscribe function(). An observable may begin issuing notifications to an observer immediately after the observable receives a subscribe notification from the observer.\
+\
+
+\b Must issue notifications serially\
+\
+
+\b0 Observables must issue their notifications one at a time, never in parallel. They may issue these notifications from different threads, but there must be a formal happens-before relationship between notifications. \
+
+\b \
+Must not communicate with observers once completed (or failed)\
+\
+
+\b0 When an observable issues an OnCompleted or OnError notification, the observable may release its resources and terminate.
+\b \
+\
+\cb1 \ul The Observer Interface\
+\
+
+\b0 \ulnone Here is a quick image of the Observer interface, which uses Observable.Subscribe() to connect with an observable. As you can see, it requires a next() function to handle input from the observable, an error() function in case the observable fails, and a complete() function for when the observable has completed.
+\b \
+\
+\cb4 \ul Example #1: Count multiple clicks over short period of time\
+\
+
+\b0 \ulnone So let\'92s talk real quick about a theoretical example. Let\'92s say that you want to create a data stream where anytime the user clicks multiple times in a short period of time, the stream outputs the number of clicks. So for example if the user double clicks, it outputs 2. If the user gets frustrated and clicks 6 times really fast, it outputs 6. We only want to capture multiple clicks, never single. Let\'92s see how we could chain together observables to do that. \
+\
+
+\b <Image>\
+\
+
+\b0 This is a mock-up of how these data streams would look like over time, from left to right. Here at the top you see the click-stream being generated by the user, with each circle representing a click.\
+\
+We chain this observable into another observable, which buffers the click stream, throttling it so that we only detect clicks within a 2 and a half second buffer.\
+\
+Next, we have another observable that maps the length of each buffer. \
+\
+Finally, we have an observable which only registers buffer periods that have more than one click. This final observable would result in our desired multiple clicks stream, since it would only emit the number of clicks a user is making within a short time period, if that number is more than 1.\
+\cb1 \
+
+\b \ul Click Stream Flowchart\
+\
+
+\b0 \ulnone Simplifying the model, we can see how we are using 4 observables chained together to generate our multiple click stream. It\'92s important that each of the four steps act independently so that we can get the most accurate and time-efficient results. If we merged any of these two into a single observable, it would reduce asynchronicity and potentially deliver results before they are complete, such as returning 4 clicks when it was actually supposed to be 5. \
+\
+
+\b \cb2 \ul Example #2: Git User Suggestions\
+\
+
+\b0 \ulnone Now, let\'92s do something more interesting and less straight-forward that our previous example. Let\'92s build a simple little app that randomly suggests three Git users to follow. The way the app will work is as follows: \
+\
+Upon startup, three git users are pulled from Github, and their image, name, and a link to their page is rendered as three suggestions. \
+\
+Each suggestion will have an x button next to it which closes that suggestion and pulls up another one at random. \
+\
+At the top of the app we have a refresh button that closes and regenerates all three suggestions. \
+\
+In terms of how this is going to work behind the scenes, we are going to make it so that the refresh function will pull a random list of users from GitHub for each of the three suggestions, and then the closeSuggestion function will render a user from that list. So when the app starts, we will immediately start out by doing a refresh, and then closeSuggestion on all three suggestions to load our initial users. \
+\
+Now let\'92s look at what the flow of Obs ervables for this will look like. \
+\cb1 \
+
+\b \ul Git User Suggestions Flowchart\
+\
+
+\b0 \ulnone So let\'92s start at the top here, with an observable connected to our refresh button\'92s click event. \
+\
+When that button is clicked, it will send a signal to another observable called requestStream that will simply generate a random list of github users. \
+\
+Then we will have another observable here called responseStream that will actually fetch the user data from those separate URLs in order to retrieve JSON lists of users. We want to keep requestStream and responseStream separate so that they can act asynchronously. That is, we don\'92t want to wait for all three lists to populate before moving on.\
+\
+Now we have the user lists we need for each suggestion, so let\'92s start again at the top to see how we pick out the users and render them to the page. The function that we decided would do that is the close suggestion button, so we start with the observable that is watching its click event.\
+\
+Now I outlined these two functions here with a single square, because I want to show that these two functions actually exist on the same observable, which is called createSuggestionStream. I separated out the two functions so that I can demonstrate how they interact with the other observables, since it is a two-step process. \
+\
+First, the createSuggestionStream will use an operator function called combineLatest. What this function does, is it takes the most recent output of multiple streams and combines them with some function that the user defines. In our case, we want to pull a random user from our suggestion list, but we only want to do this when the close suggestion button has been clicked. So basically we are just using the close suggestion button as a means of activating this function. \
+\
+Next, we are going use another operator function called merge, which merges two streams together. In this case, what we want to do is output the random user we just selected, but only if the responseStream is not null. If the responseStream is null that means that it is in the process of populating, so we don\'92t want to show anything. \
+\
+Finally, we have our suggestionStream observer, which we will subscribe to the random user stream we just created. And this observer will have use a renderSuggestion() function that will render the user to the DOM when there is any change in the data stream.\
+\
+So now that we have a conceptual idea of what this looks like, let\'92s see it in action. \
+\
+
+\b \cb5 \ul (App Demo)\
+\
+\cb1 (Code)
+\b0 \cb5 \ulnone \
+\
+
+\b \ul (Final Slide)
+\b0 \ulnone \
+\
+
+\b \cb1 \
+}
